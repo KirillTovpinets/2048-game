@@ -38,6 +38,7 @@ export const randomCellGanarator = () => {
       value: randomNumber(0, 1) ? 4 : 2,
       color: randomColor(),
       id: uuid(),
+      toRemove: false,
     };
   };
 };

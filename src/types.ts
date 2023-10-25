@@ -4,6 +4,7 @@ export type Cell = {
   value: number;
   color: string;
   id: string;
+  toRemove: boolean;
 };
 
 export enum Directions {

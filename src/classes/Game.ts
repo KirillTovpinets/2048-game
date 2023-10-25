@@ -41,6 +41,10 @@ export class GameStore {
     this.cells.push(getRandomCell(this.cells));
   }
 
+  private removeUselessCell() {
+    this.cells = this.cells.filter((cell) => !cell.toRemove);
+  }
+
   moveCells(direction: string) {
     switch (direction as Directions) {
       case Directions.right:
@@ -59,6 +63,7 @@ export class GameStore {
 
     setTimeout(() => {
       this.createNewCell();
+      this.removeUselessCell();
     }, 400);
   }
 
@@ -86,34 +91,36 @@ export class GameStore {
     const collection = rowAxis === 'x' ? this.yCollection : this.xCollection;
     const elementAxis = rowAxis == 'x' ? 'y' : 'x';
 
-    collection.forEach((selectedAxis) => {
-      let oppositAxis = this.cells
-        .filter((cell) => cell[elementAxis] === selectedAxis)
+    collection.forEach((axisValue) => {
+      const valuesInCurrentAxis = this.cells
+        .filter((cell) => cell[elementAxis] === axisValue)
+        .sort(sortFunction)
         .map((cell) => cell[rowAxis]);
 
       let updatedIndex = edgeIndex;
       let isMerged = false;
+      const movedCells: Cell[] = [];
 
-      while (oppositAxis.length !== 0) {
-        const max =
-          edgeIndex === 0 ? Math.min(...oppositAxis) : Math.max(...oppositAxis);
+      while (valuesInCurrentAxis.length !== 0) {
+        const max = valuesInCurrentAxis.shift();
 
         const element = this.cells.find(
-          (cell) => cell[rowAxis] === max
+          (cell) => cell[rowAxis] === max && cell[elementAxis] === axisValue
         ) as Cell;
 
         element[rowAxis] = updatedIndex;
 
-        if (!isMerged) {
-          const cell = this.flattenAxis(sortFunction, elementAxis);
-
-          if (cell) {
-            oppositAxis = oppositAxis.filter((x) => x !== cell[rowAxis]);
-            isMerged = true;
+        const nextElement = movedCells.pop();
+        if (!isMerged && nextElement) {
+          isMerged = this.flattenAxis(element, nextElement);
+          if (isMerged) {
+            updatedIndex =
+              edgeIndex === 0 ? updatedIndex - 1 : updatedIndex + 1;
           }
+        } else {
+          isMerged = false;
         }
-
-        oppositAxis = oppositAxis.filter((x) => x !== max);
+        movedCells.push(element);
 
         if (edgeIndex === 0) {
           updatedIndex++;
@@ -124,42 +131,20 @@ export class GameStore {
     });
   }
 
-  private flattenAxis(
-    sortFunction: (a: Cell, b: Cell) => number,
-    axis: 'x' | 'y'
-  ) {
-    const updatedCollection: Cell[] = [];
-    const axisCollection = axis === 'x' ? this.xCollection : this.yCollection;
-    let filteredCell;
-    axisCollection.forEach((selectedAxis) => {
-      let merged = false;
-      const updatedColumn = this.cells
-        .filter((cell) => cell[axis] === selectedAxis)
-        .sort(sortFunction)
-        .reduce((arr, cell) => {
-          const next = arr.pop();
-          if (next && next.value === cell.value && !merged) {
-            const updatedElement = {
-              ...next,
-              value: cell.value + next.value,
-            };
-            arr.push(updatedElement);
-            filteredCell = cell;
-            merged = !merged;
-          } else if (next) {
-            arr.push(next);
-            arr.push(cell);
-          } else {
-            arr.push(cell);
-          }
-          return arr;
-        }, [] as Cell[]);
+  private flattenAxis(element: Cell, nextCell: Cell) {
+    if (element.value !== nextCell.value) {
+      return false;
+    }
 
-      updatedCollection.push(...updatedColumn);
-    });
-
-    this.cells = [...updatedCollection];
-
-    return filteredCell;
+    if (element.x > nextCell.x || element.y > nextCell.y) {
+      element.value += element.value;
+      nextCell.toRemove = true;
+    } else {
+      nextCell.value += element.value;
+      element.toRemove = true;
+    }
+    element.x = nextCell.x;
+    element.y = nextCell.y;
+    return true;
   }
 }
