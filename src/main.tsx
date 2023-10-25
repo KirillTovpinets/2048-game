@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import ObserverApp from './App.tsx';
 import { GameStore } from './classes/Game.ts';
 import { GameContext } from './contexts.ts';
@@ -7,7 +6,7 @@ import './index.css';
 
 const Main = () => {
   const GameStoreContext = new GameStore();
-  GameStoreContext.mockGame();
+  GameStoreContext.initGame();
   return (
     <React.StrictMode>
       <GameContext.Provider value={GameStoreContext}>
@@ -16,4 +15,6 @@ const Main = () => {
     </React.StrictMode>
   );
 };
-ReactDOM.createRoot(document.getElementById('root')!).render(<Main />);
+const Game2048 = () => <Main />;
+
+export default Game2048;

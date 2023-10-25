@@ -5,6 +5,7 @@ import { getRandomCell } from '../utils';
 
 export class GameStore {
   public cells: Cell[] = [];
+  private updated: boolean = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -62,7 +63,10 @@ export class GameStore {
     }
 
     setTimeout(() => {
-      this.createNewCell();
+      if (this.updated) {
+        this.createNewCell();
+        this.updated = false;
+      }
       this.removeUselessCell();
     }, 400);
   }
@@ -100,6 +104,7 @@ export class GameStore {
       let updatedIndex = edgeIndex;
       let isMerged = false;
       const movedCells: Cell[] = [];
+      let positionUpdated = false;
 
       while (valuesInCurrentAxis.length !== 0) {
         const max = valuesInCurrentAxis.shift();
@@ -108,7 +113,10 @@ export class GameStore {
           (cell) => cell[rowAxis] === max && cell[elementAxis] === axisValue
         ) as Cell;
 
-        element[rowAxis] = updatedIndex;
+        if (element[rowAxis] !== updatedIndex) {
+          element[rowAxis] = updatedIndex;
+          positionUpdated = true;
+        }
 
         const nextElement = movedCells.pop();
         if (!isMerged && nextElement) {
@@ -120,6 +128,11 @@ export class GameStore {
         } else {
           isMerged = false;
         }
+
+        if (!this.updated) {
+          this.updated = isMerged || positionUpdated;
+        }
+
         movedCells.push(element);
 
         if (edgeIndex === 0) {
