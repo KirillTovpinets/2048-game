@@ -7,7 +7,7 @@ import { GameContext } from './contexts';
 import * as S from './styles/App.styles';
 
 function App() {
-  const rows = [];
+  const rows: JSX.Element[] = [];
   const game = useContext<GameStore>(GameContext);
   const activeColls: React.JSX.Element[] = game.cells.map((cell) => (
     <ActiveCell key={cell.id} {...cell} />
@@ -28,7 +28,7 @@ function App() {
     return () => document.removeEventListener('keydown', handler);
   }, [game]);
   for (let i = 0; i < FIELD_CELLS_IN_ROW; i++) {
-    const colls = [];
+    const colls: JSX.Element[] = [];
     for (let j = 0; j < FIELD_CELLS_IN_ROW; j++) {
       colls.push(<S.GameCell key={j} />);
     }

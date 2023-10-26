@@ -1,7 +1,7 @@
 import React from 'react';
-import ObserverApp from './App.tsx';
-import { GameStore } from './classes/Game.ts';
-import { GameContext } from './contexts.ts';
+import ObserverApp from './App';
+import { GameStore } from './classes/Game';
+import { GameContext } from './contexts';
 import './index.css';
 
 const Main = () => {
